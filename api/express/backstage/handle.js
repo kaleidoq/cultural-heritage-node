@@ -3,8 +3,11 @@ const router = express.Router();
 const mysql = require('mysql')
 const models = require('../module')
 const Result = require('../util/Result')
+const util = require('util')
 
 const db = mysql.createPool(models.mysql)
+// 对mydql的query进行promise化，能够解决回调地狱的问题
+db.queryAsync = util.promisify(db.query)
 
 // 获得文章的详细内容
 router.get('/getArticleCover', (req, res) => {
@@ -49,6 +52,25 @@ router.get('/getArticleCover', (req, res) => {
             new Result(mes, '首页容器内数据获取成功').success(res)
         });
     })
+})
+
+
+// 获得用户的相关数据
+router.get('/queryUserInfoList', async (req, res) => {
+    // const data = req.body
+    db.query('select * from user_info', (err, mes) => {
+        if (err) return console.log(err.message)
+        new Result(mes, '用户数据获取成功').success(res)
+    })
+})
+
+
+// 删除文章（实际不删除，设置idDel=1
+router.get('/getGoodsList', async (req, res) => {
+    const data = req.query
+    let sql = `select * from goods_info;`
+    const mes = await db.queryAsync(sql)
+    new Result(mes, '商品获取成功').success(res)
 })
 
 

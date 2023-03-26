@@ -15,7 +15,7 @@ const { verifyToken } = require('./token')
 //全局中间件，进行token的验证
 //白名单
 const Result = require('./util/Result')
-const whiteList = ['/api/user/login']
+const whiteList = ['/api/user/login', '/backstage/login']
 app.use((req, res, next) => {
     // console.log(req)
     if (!whiteList.includes(req.url)) {
@@ -49,12 +49,16 @@ const news = require('./service/news')
 app.use('/api/news', news)
 const search = require('./service/search')
 app.use('/api/search', search)
+const goods = require('./service/goods')
+app.use('/api/goods', goods)
+const order = require('./service/order')
+app.use('/api/order', order)
 
 // 后台管理
 const dao = require('./backstage/dao')
-app.use('/backstage/dao', dao)
+app.use('/backstage', dao)
 const handle = require('./backstage/handle')
-app.use('/backstage/handle', handle)
+app.use('/backstage', handle)
 
 
 // 验证token

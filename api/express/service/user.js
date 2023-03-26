@@ -1,11 +1,32 @@
-const express = require('express');
-const router = express.Router();
+const router = require('express').Router();
 const mysql = require('mysql')
 const models = require('../module')
 const { createToken } = require('../token.js')
 const Result = require('../util/Result')
+const util = require('util')
 
 const db = mysql.createPool(models.mysql)
+
+// 对mydql的query进行promise化，能够解决回调地狱的问题
+db.queryAsync = util.promisify(db.query)
+
+
+// function foo(str1, str2, callback) {
+//     setTimeout(() => {
+//         console.log('setTimeout')
+//         // callback函数是通过最后一个参数这个位置来识别的，与callback这个名字无关
+//         callback(str1, str2)
+//     }, 1000)
+// }
+
+// let aaa = util.promisify(foo)
+// aaa('helfbfdbdfblo', 'world')
+//     .then(res => {
+//         console.log(res)
+//     }).catch(err => {
+//         console.log(err)
+
+//     })
 
 
 router.post('/login', (req, res) => {
@@ -131,12 +152,38 @@ router.get('/getUserChatInfo', (req, res) => {
     })
 })
 
+/**
+ * 获得用户头像昵称和简介以及关注信息
+ * @param(user_id)
+ * @returns(nickname,head,introduce,is_follow)
+ */
+router.get('/getUserIntro', async (req, res) => {
+    const user = req.body.userID
+    const other = req.query.user_id
+    let sql = `select nickname,head,introduce from user_info where user_id =${other};
+                select * from followee_user where user_id=${user} and followed_user_id=${other};`
+    let mes = await db.queryAsync(sql)
+    let results = mes[0][0]
+    if (mes[1].length === 0)
+        results.is_follow = false
+    else results.is_follow = true
+    console.log(results)
+    new Result(results, '头像昵称简介以及关注信息获取成功').success(res)
+    // db.query('select nickname,head,introduce from user_info where user_id=?', [id], (err, mes) => {
+    //     if (err) return console.log(err.message)
+    //     // console.log(mes);
+    //     new Result(mes[0], '头像昵称简介获取成功').success(res)
+    // })
+})
+
+
+
 // 获得用户的具体信息
 router.get('/getUserInfo', (req, res) => {
     const user = req.query
     const data = req.body
     let id = 0
-    if (user.user_id == null) id = data.userID
+    if (user.user_id == null || user.user_id == 0) id = data.userID
     else id = user.user_id
     db.query('select * from user_info where user_id=?', [id], (err, mes) => {
         if (err) return console.log(err.message)
@@ -146,19 +193,23 @@ router.get('/getUserInfo', (req, res) => {
 })
 
 // 获得某个用户的文章具体信息
-router.get('/getUserArticle', (req, res) => {
+router.get('/getUserArticle', async (req, res) => {
     const user = req.query
     const data = req.body
     let id = 0
-    if (user.user_id == null) id = data.userID
+    if (user.user_id == null || user.user_id == 0) id = data.userID
     else id = user.user_id
     console.log(user, 'user')
     console.log(id, 'id')
-    db.query('select * from cover_content where user_id=?', [id], (err, mes) => {
-        if (err) return console.log(err.message)
-        // console.log(mes);
-        new Result(mes, 'getUserArticle成功').success(res)
-    })
+    // db.query('select * from cover_content where user_id=?', [id], (err, mes) => {
+    //     if (err) return console.log(err.message)
+    //     // console.log(mes);
+    //     new Result(mes, 'getUserArticle成功').success(res)
+    // })
+    const mes = await db.queryAsync('select * from cover_content where user_id=? order by create_time desc', [id])
+    // console.log(mes);
+    new Result(mes, 'getUserArticle成功').success(res)
+
 })
 
 // 获得用户的关注列表
@@ -181,24 +232,6 @@ router.get('/getFollowedUsers', (req, res) => {
     })
 })
 
-
-// 查询用户
-router.get('/searchUser', (req, res) => {
-    const data = req.body
-    const query = req.query
-    sql = `select user_id,head,introduce,nickname from user_info as cn
-        where cn.introduce like '%${query.info}%'or cn.nickname like '%te%'
-            order by
-                case
-                    when cn.introduce like '%${query.info}%' then length(REPLACE(cn.introduce,'${query.info}',''))/length(cn.introduce)
-                    when cn.nickname like '%${query.info}%' then length(REPLACE(cn.nickname,'${query.info}',''))/length(cn.nickname)
-                    end`
-    db.query(sql, (err, mes) => {
-        if (err) return console.log(err.message)
-        console.log(mes, 'searchUser');
-        new Result(mes, '用户列表查询成功').success(res)
-    })
-})
 
 
 // 获得个人界面的信息
@@ -255,6 +288,19 @@ router.get('/getCollection', (req, res) => {
         new Result(mes, '个人收藏文章获取成功').success(res)
 
     })
+})
+
+
+// 删除文章（实际不删除，设置idDel=1
+router.delete('/delectArticle', async (req, res) => {
+    const data = req.body //获得传递过来的数据
+    let sql = `update article set is_del=1 where article_id=?;`
+    const mes = await db.queryAsync(sql, [data.article_id])
+    if (mes.affectedRows = 1) {
+        new Result('文章删除成功').message(res)
+    } else {
+        new Result('文章删除失败').fail(404, res)
+    }
 })
 
 
