@@ -14,13 +14,13 @@ router.get('/getHotClassify', (req, res) => {
      group by a.class_id order by class_count desc) t  where t.class_id=c.class_id limit 5;`
     db.query(sql, (err, mes) => {
         if (err) return console.log(err.message)
-        console.log(mes,);
+        // console.log(mes);
         new Result(mes, '热门分类查询成功').success(res)
     })
 })
 
 
-
+/*
 // 获得分类分组信息
 router.get('/getClassify', (req, res) => {
     const data = req.body
@@ -49,9 +49,24 @@ router.get('/getClassify', (req, res) => {
                 })
                 mes[index].children = children
             });
-            console.log(mes, "mes");
+            // console.log(mes, "mes");
             new Result(mes, "分类列表获取完毕").success(res)
         });
+    })
+})
+ */
+
+
+// 获得分类分组信息
+router.get('/getClassify', (req, res) => {
+    const data = req.body
+    // const query = req.query
+    sql = `select * from classify where parent_class_id=0`
+    db.query(sql, (err, mes) => {
+        if (err) return console.log(err.message)
+        let promiseList = []
+        // 将全部的异步函数循环存入promiseList中
+        new Result(mes, "分类列表获取完毕").success(res)
     })
 })
 

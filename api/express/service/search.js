@@ -6,6 +6,10 @@ const Result = require('../util/Result')
 
 const db = mysql.createPool(models.mysql)
 
+const util = require('util')
+// 对mydql的query进行promise化，能够解决回调地狱的问题
+db.queryAsync = util.promisify(db.query)
+
 // 热门搜索信息获得
 router.get('/getHotSearch', (req, res) => {
     // let sql = `select count(s.search_info) as search_count, s.search_info
@@ -131,6 +135,29 @@ router.post('/searchTags', (req, res) => {
         console.log(mes, 'searchtag');
         new Result(mes, '用户标签查询成功').success(res)
     })
+})
+
+
+/**
+ * 搜索商品内容
+ * @param {info,length}
+ */
+router.post('/searchGoods', async (req, res) => {
+    // const query = req.query
+    const body = req.body
+    insertSearch(body)
+    sql = `select *
+        from cover_content as g
+        where
+                g.title like '%${body.info}%'or g.content like '%${body.info}%'
+        order by
+            case
+                when g.title like '%${body.info}%' then length(REPLACE(g.title,'${body.info}',''))/length(g.title)
+                when g.content like '%${body.info}%' then length(REPLACE(g.content,'${body.info}',''))/length(g.content)
+                end
+        limit ${body.length},10`
+    const mes = await db.queryAsync(sql)
+    new Result(mes, '商品查询成功').success(res)
 })
 
 

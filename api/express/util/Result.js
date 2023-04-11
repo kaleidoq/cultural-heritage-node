@@ -31,7 +31,7 @@ class Result {
             base.data = this.data
         }
         if (this.options) {
-            base = {...base, ...this.options }
+            base = { ...base, ...this.options }
         }
         // console.log(base, 'base')
         console.log(base.code, base.msg, 'base.msg')
@@ -58,10 +58,9 @@ class Result {
     //     this.json(res)
     // }
 
-    fail(code, res) {
-        // console.log(res, 'failres')
-        res.status(code)
-        this.code = code
+    fail(res) {
+        this.code = CODE_ERROR
+        this.data = this.msg
         this.json(res)
     }
 }

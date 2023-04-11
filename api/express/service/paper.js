@@ -14,10 +14,12 @@ router.get('/getChatList', (req, res) => {
     const another = req.query.user_id
     // const user = 1
     // const another = 3
+    console.log(another, 'another')
     let list_id = 0
     const chat = {}
-    let sql = "select list_id from chat_main where user_id = ? and another_id = ?; select * from chat_main where user_id =? and another_id =?; "
-    db.query(sql, [user, another, another, user], async (err, mes) => {
+    let sql = `select list_id from chat_main where user_id = ${user} and another_id = ${another};
+    select * from chat_main where user_id =${another} and another_id =${user}; `
+    db.query(sql, async (err, mes) => {
         if (err) return console.log(err.message)
         console.log(mes)
         mes.forEach(el => {
@@ -26,7 +28,7 @@ router.get('/getChatList', (req, res) => {
         chat.list_id = list_id
         db.query("select * from chat_head_list where list_id=? order by send_time asc;", [list_id], async (err, mes) => {
             if (err) return console.log(err.message)
-            console.log(mes, "chat")
+            // console.log(mes, "chat")
             chat.list = mes
             new Result(chat, '消息数据获取成功').success(res)
         })
@@ -51,12 +53,12 @@ router.post('/submitChat', async (req, res) => {
         })
         let listRes = await Promise.resolve(queryPromise)
         data.list_id = listRes.insertId
-        console.log(data.list_id, 'listres')
+        // console.log(data.list_id, 'listres')
     }
     let sql = "insert into chat_list (list_id, user_id, content) values (?,?,?);update chat_main set last_chat_id = last_insert_id() where list_id=?; "
     db.query(sql, [data.list_id, data.userID, data.content, data.list_id], (err, mes) => {
         if (err) return console.log(err.message)
-        console.log(mes, 'mes')
+        // console.log(mes, 'mes')
         new Result(data, '消息发送成功').success(res)
     })
 })
@@ -67,13 +69,14 @@ router.post('/submitChat', async (req, res) => {
 router.get('/getPaperList', (req, res) => {
     const data = req.body
     // let sql = "select * from chat_main where user_id=? or another_id=?; "
-    let sql = "select * from paper_list where user_id =? or another_id order by last_chat_time desc; "
+    let sql = "select * from paper_list where user_id =? or another_id=? order by last_chat_time desc; "
     let promiseList = []
     const info = []
     const user = []
     db.query(sql, [data.userID, data.userID], async (err, mes) => {
         if (err) return console.log(err.message)
         mes.forEach((item, index) => {
+            console.log(item)
             if (item.user_id == data.userID) user.push(item.another_id)
             else user.push(item.user_id)
         })
@@ -81,9 +84,9 @@ router.get('/getPaperList', (req, res) => {
             promiseList.push(new Promise((resolve, reject) => {
                 db.query('select * from user_info where user_id=?;', [user[index]], (err, data) => {
                     if (err) return console.log(err.message)
-                    console.log(mes[index], 'index', index)
+                    // console.log(mes[index], 'index', index)
 
-                    console.log(data)
+                    console.log(data, 'data111')
                     resolve(data[0])
                 })
             }));
@@ -94,7 +97,7 @@ router.get('/getPaperList', (req, res) => {
             chil.map((item, index) => {
                 // mes[index].chilCount = item[0].count
                 // info.push(item[0])
-                // console.log(item, "item");
+                console.log(item, "item");
                 mes[index].another_id = item.user_id
                 mes[index].head = item.head
                 mes[index].nickname = item.nickname

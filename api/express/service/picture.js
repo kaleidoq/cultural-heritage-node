@@ -10,7 +10,7 @@ const db = mysql.createPool(models.mysql)
 // 上传照片
 router.post('/uploadPic', async (req, res) => {
     const data = req.body
-    console.log(req, "req")
+    // console.log(req, "req")
 
     // const uploadRes = await txyun.uploadBase64(data.pic)
     const uploadRes = await txyun.uploadBase64(data.pic)

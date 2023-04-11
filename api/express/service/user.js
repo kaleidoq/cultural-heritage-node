@@ -79,8 +79,9 @@ router.get('/queryUserInfoList', async (req, res) => {
 router.post('/updateUserInfo', (req, res) => {
     const data = req.body //获得传递过来的数据
     let sql = `update user_info
-set nickname='${data.nickname}',sex=${data.sex},birthday='${data.birthday}',head='${data.head}',introduce='${data.introduce}',address='${data.address}'
-where user_id=${data.userID};`
+        set nickname='${data.nickname}',sex=${data.sex},birthday='${data.birthday}',
+        head='${data.head}',introduce='${data.introduce}',address='${data.address}'
+        where user_id=${data.userID};`
     db.query(sql, (err, mes) => {
         if (err) return console.log(err)
         console.log(data)
@@ -141,10 +142,11 @@ router.get('/getUserChatInfo', (req, res) => {
     const user = req.query
     const data = req.body
     let id = 0
+    // console.log(user)
     if (user.user_id == null) id = data.userID
     else id = user.user_id
-    console.log(user, 'user')
-    console.log(id, 'id')
+    // console.log(user, 'user')
+    // console.log(id, 'id')
     db.query('select nickname,head from user_info where user_id=?', [id], (err, mes) => {
         if (err) return console.log(err.message)
         // console.log(mes);
@@ -167,7 +169,7 @@ router.get('/getUserIntro', async (req, res) => {
     if (mes[1].length === 0)
         results.is_follow = false
     else results.is_follow = true
-    console.log(results)
+    // console.log(results)
     new Result(results, '头像昵称简介以及关注信息获取成功').success(res)
     // db.query('select nickname,head,introduce from user_info where user_id=?', [id], (err, mes) => {
     //     if (err) return console.log(err.message)
@@ -179,17 +181,17 @@ router.get('/getUserIntro', async (req, res) => {
 
 
 // 获得用户的具体信息
-router.get('/getUserInfo', (req, res) => {
-    const user = req.query
-    const data = req.body
+router.get('/getUserInfo', async (req, res) => {
+    const mine = req.body.userID
+    const user = req.body.user_id
     let id = 0
-    if (user.user_id == null || user.user_id == 0) id = data.userID
-    else id = user.user_id
-    db.query('select * from user_info where user_id=?', [id], (err, mes) => {
-        if (err) return console.log(err.message)
-        // console.log(mes);
-        new Result(mes[0], 'getUser成功').success(res)
-    })
+    if (user == null || user == 0) id = mine
+    else id = user
+    console.log(id, 'id');
+    let sql = `select * from user_info where user_id=${id}`
+    let mes = await db.queryAsync(sql)
+    // console.log(mes);
+    new Result(mes[0], 'getUser成功').success(res)
 })
 
 // 获得某个用户的文章具体信息
@@ -239,42 +241,43 @@ router.get('/getFollowedUsers', (req, res) => {
 router.get('/getMineInfo', (req, res) => {
     const data = req.body //获得传递过来的数据
     let sql = `select nickname,head,introduce from user_info where user_id =${data.userID};
-select count(followed_user_id) as followNum from followee_user where user_id =${data.userID};
-select count(user_id) as fanNum from followee_user where followed_user_id =${data.userID};
-select count(article_id) as articleNum from article where user_id =${data.userID};
-select count(article_id) as collectNum from collection_article_user where user_id =${data.userID};`
+        select count(followed_user_id) as followNum from followee_user where user_id =${data.userID};
+        select count(user_id) as fanNum from followee_user where followed_user_id =${data.userID};
+        select count(article_id) as articleNum from article where user_id =${data.userID};
+        select count(article_id) as collectNum from collection_article_user where user_id =${data.userID};`
     db.query(sql, (err, mes) => {
         if (err) return console.log(err)
-        // console.log(data)
-        // console.log(mes)
-        // const info = []
-        // mes.forEach((item, index) => {
-        //     // console.log(item, 'item')
-        //     console.log(item[0], 'item0')
-        //     item = item[0]
-        //     info.push(item[0])
-        // });
-        // console.log(info, 'info')
-
-        // console.log(mes)
         mes.forEach((item, index) => {
             mes.splice(index, 1, item[0])
         })
-        // const info = mes.flat(Infinity)
-        // console.log(info)
-        // const info = []
-
-        // mes.map(item => {
-        //     console.log(item)
-        //     item.map(ele => {
-        //         info.push(ele)
-        //     })
-        // })
-        // console.log(info)
         new Result(mes, '个人主页信息获取成功').success(res)
 
     })
 })
+
+
+/**
+ *  获得个人界面的信息
+ *  包括头像昵称 关注人数 粉丝人数 帖子人数
+ *  @param(user_id)
+ *  @returns(nickname,head,introduce,followNum,fanNum,articleNum,collectNum)
+ */
+router.get('/getUserCount', async (req, res) => {
+    const mine = req.body.userID //获得传递过来的数据
+    const user = req.query.user_id //获得传递过来的数据
+    let sql = `select nickname,head,introduce from user_info where user_id =${user};
+        select count(followed_user_id) as followNum from followee_user where user_id =${user};
+        select count(user_id) as fanNum from followee_user where followed_user_id =${user};
+        select count(article_id) as articleNum from article where user_id =${user};
+        select count(article_id) as collectNum from collection_article_user where user_id =${user};`
+    const mes = await db.queryAsync(sql)
+    console.log(mes);
+    mes.forEach((item, index) => {
+        mes.splice(index, 1, item[0])
+    })
+    new Result(mes, '用户数量数据获得成功').success(res)
+})
+
 
 
 // 获得用户收藏信息
@@ -291,17 +294,6 @@ router.get('/getCollection', (req, res) => {
 })
 
 
-// 删除文章（实际不删除，设置idDel=1
-router.delete('/delectArticle', async (req, res) => {
-    const data = req.body //获得传递过来的数据
-    let sql = `update article set is_del=1 where article_id=?;`
-    const mes = await db.queryAsync(sql, [data.article_id])
-    if (mes.affectedRows = 1) {
-        new Result('文章删除成功').message(res)
-    } else {
-        new Result('文章删除失败').fail(404, res)
-    }
-})
 
 
 module.exports = router

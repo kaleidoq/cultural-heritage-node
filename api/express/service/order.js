@@ -106,6 +106,8 @@ router.post('/initOrder', async (req, res) => {
     (goods_id, seller_user_id, buyer_user_id, is_pay, price, status, cgn_id)
                 values (${data.goods_id},${data.seller_user_id},${user},1,${data.price},1,${data.cgn_id});
                 update goods_info set is_promote = 1 where goods_id=${data.goods_id};`
+    console.log(data, 'initOrder data')
+
     const mes = await db.queryAsync(sql)
     // console.log(mes)
     let insertId = mes[0].insertId
@@ -123,7 +125,7 @@ router.get('/getOrderDesc', async (req, res) => {
     const id = req.query.order_id
     let sql = `select * from order_desc_list where order_id = ${id};`
     const mes = await db.queryAsync(sql)
-    console.log(mes[0])
+    // console.log(mes[0])
     new Result(mes[0], '订单详情查看成功').success(res)
 })
 
@@ -138,8 +140,47 @@ router.get('/queryOrder', async (req, res) => {
     const user = req.body.userID
     let sql = `select * from order_desc_list where buyer_user_id = ${user};`
     const mes = await db.queryAsync(sql)
-    console.log(mes)
+    // console.log(mes)
     new Result(mes, '订单列表查看成功').success(res)
 })
+
+
+/**
+ * 卖家发货
+ * @param(order_id)
+ * @returns(mes)
+ * @method(post)
+ */
+router.post('/setDeliver', async (req, res) => {
+    const user = req.body.userID
+    const another = req.body.another_id
+    const id = req.body.order_id
+    let sql = `update order_list set status=2 where order_id = ${id};`
+    const result = await db.queryAsync(sql)
+    //     sql = `select list_id from chat_main where
+    //     (user_id = ${user} and another_id = ${another}) or (user_id = ${another} and another_id = ${user});`
+    //     const mes = await db.queryAsync(sql)
+    //     sql = `insert into chat_list (list_id, user_id, content)
+    // values (${mes[0].list_id},${parseInt(user),'您的商品已经发货啦，请等待它的到来噢'});`
+    //     console.log(mes)
+    new Result(result, '订单已发货！').success(res)
+})
+
+
+/**
+ * 用户确认收货
+ * @param(order_id)
+ * @returns(mes)
+ * @method(post)
+ */
+router.post('/setReceive', async (req, res) => {
+    const user = req.body.userID
+    const id = req.body.order_id
+    let sql = `update order_list set status=3 where order_id = ${id};`
+    const mes = await db.queryAsync(sql)
+    console.log(mes)
+    new Result(mes, '订单完成！').success(res)
+})
+
 
 module.exports = router

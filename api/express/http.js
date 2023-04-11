@@ -1,5 +1,10 @@
 const express = require('express')
 const app = express()
+require('express-async-errors');
+// const domain = require('domain')
+// var http = require('http');
+// var io = require('socket.io');
+
 
 // 配置解析 数据格式为表单数据的请求体 的中间件
 // app.use(express.urlencoded({ extended: false }))
@@ -10,19 +15,27 @@ app.use(express.json());
 const cors = require('cors')
 app.use(cors())
 
-
 const { verifyToken } = require('./token')
 //全局中间件，进行token的验证
 //白名单
 const Result = require('./util/Result')
 const whiteList = ['/api/user/login', '/backstage/login']
 app.use((req, res, next) => {
-    // console.log(req)
+    // // 捕获异常
+    // var dom = domain.create();
+    // domain.on('error', function (err) {
+    //     // alternative: next(err)
+    //     console.log(err.stack);
+    //     res.statusCode = 500;
+    //     res.end(err.message + '\n');
+    //     domain.dispose();
+    // });
+    // domain.enter();
+    // console.log(req.headers.origin, 'head')
     if (!whiteList.includes(req.url)) {
         verifyToken(req.headers.authorization).then(token => {
             console.log(token, 'token')
             req.body.userID = token.userID
-            // console.log(req.body)
             next()
         }).catch(err => {
             res.status(401)
@@ -32,7 +45,6 @@ app.use((req, res, next) => {
         next()
     }
 })
-
 
 // 注册路由组件
 const user = require('./service/user')
@@ -59,14 +71,9 @@ const dao = require('./backstage/dao')
 app.use('/backstage', dao)
 const handle = require('./backstage/handle')
 app.use('/backstage', handle)
+const report = require('./backstage/report')
+app.use('/backstage', report)
 
-
-// 验证token
-// const tokenjs = require('./token')
-// app.use(tokenjs.verifyToken('aa'))
-// indexApi.get('/profile', auth.auth, async (req, res) => {
-//     res.send(req.user)
-// })
 
 
 //解析一遍post参数
@@ -74,11 +81,56 @@ app.use('/backstage', handle)
 // app.use(express.json())
 
 //路由分发器
-app.get('/test', async (req, res) => {
+app.get('/', async (req, res) => {
     res.send('测试打通！没问题')
 })
 
-
-app.listen(80, () => {
+var server = app.listen(80, () => {
     console.log("打开服务器开始监听")
 })
+
+
+
+// 注册实时聊天socket
+// var server = app.listen(8810)
+var io = require('socket.io')(server, {
+    allowEIO3: true,
+    cors: {
+        // origin: 'http://localhost:8080',
+        origin: ['http://localhost:8080', 'http://localhost:8081'],
+        // async_mode: 'eventlet',
+        // methods: ["GET", "POST"],
+        credentials: true,
+        allowEIO3: true
+    }
+});
+
+
+
+// 监听客户端连接
+io.on('connection', function (socket) {
+    console.log('客户端连接')
+
+    // 监听客户端断开
+    socket.on('init', (data) => {
+        console.log('前台连接', data)
+    })
+
+    // 监听客户端断开
+    socket.on('disconnect', () => {
+        console.log('客户端断开')
+    })
+
+    // 给客户端发送消息
+    // socket.emit('welcome', '欢迎连接socket')
+    socket.on('sendMessage', data => {
+        console.log(`收到客户端的消息：${data}`)
+        io.sockets.emit('broadcast_msg', data)
+    })
+
+    // 监听客户端消息
+    socket.on('hello', data => {
+        console.log('接收客户端发送数据', data)
+    })
+
+});

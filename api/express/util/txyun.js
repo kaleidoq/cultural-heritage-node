@@ -10,9 +10,9 @@ var cos = new COS({
     // AppId: '1***********4',
     // SecretId: 'A************************u',
     // SecretKey: '7************************H',
-    APPID: 'xxxxxxxxxx',
-    SecretId: 'xxxxxxxxxxxx',
-    SecretKey: 'xxxxxxxxxxx',
+    APPID: '1316814352',
+    SecretId: 'AKIDFFyRcefSNnxpRotiKhoodC5h5D8xYu0v',
+    SecretKey: 'pNhmdEl6B0Zu40g7JFxQeeQwBBuRknbM',
     // getAuthorization: function(options, callback) {
     //     // 初始化时不会调用，只有调用 cos 方法（例如 cos.putObject）时才会进入
     //     // 异步获取临时密钥
@@ -56,7 +56,6 @@ function blobToBase64(blob, callback) {
     callback(base64)
 }
 
-
 const filePath = "F:\\uniapp\\diy-shop\\api\\express\\util\\img_5.jpg" // 本地文件路径
 function put(filePath) {
     console.log(filePath)
@@ -66,7 +65,7 @@ function put(filePath) {
     //     console.log("base64", filePath);
     // });
     cos.putObject({
-        Bucket: 'xxxxxxxxxxxxxxx',
+        Bucket: 'img-kaleido-1316814352',
         /* 填入您自己的存储桶，必须字段 */
         Region: 'ap-guangzhou',
         /* 存储桶所在地域，例如 ap-beijing，必须字段 */
@@ -94,7 +93,7 @@ function uploadBase64(base64Url) {
     // 需要转为 Buffer上传
     var body = Buffer.from(base64Url.split(',')[1], 'base64');
     const res = cos.putObject({
-        Bucket: 'xxxxxxxxxxxxxx',
+        Bucket: 'img-kaleido-1316814352',
         /* 填入您自己的存储桶，必须字段 */
         Region: 'ap-guangzhou',
         /* 必须 */
