@@ -10,9 +10,6 @@ var cos = new COS({
     // AppId: '1***********4',
     // SecretId: 'A************************u',
     // SecretKey: '7************************H',
-    APPID: '1316814352',
-    SecretId: 'AKIDFFyRcefSNnxpRotiKhoodC5h5D8xYu0v',
-    SecretKey: 'pNhmdEl6B0Zu40g7JFxQeeQwBBuRknbM',
     // getAuthorization: function(options, callback) {
     //     // 初始化时不会调用，只有调用 cos 方法（例如 cos.putObject）时才会进入
     //     // 异步获取临时密钥
