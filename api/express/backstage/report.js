@@ -142,4 +142,30 @@ router.get('/reportUserAddress', async (req, res) => {
 })
 
 
+/**
+ *  获得用户的年龄区间
+ *  @param()
+ */
+router.get('/reportUserAge', async (req, res) => {
+    let sql = `SELECT name, count(*) AS value
+        FROM
+    (select case
+                when age >= 10 and age <= 20 then '10-20'
+                when age >= 21 and age <= 25 then '21-25'
+                when age >= 26 and age <= 30 then '26-30'
+                 when age >= 31 and age <= 40 then '31-40'
+                 else '40+'
+                end as name
+     FROM user_info
+     WHERE 1
+    ) AS  age_summaries
+        GROUP BY name
+        ORDER BY name;`
+    const mes = await db.queryAsync(sql)
+    // console.log(mes)
+    new Result(mes, '价格区间可视化数据获取成功').success(res)
+})
+
+
+
 module.exports = router

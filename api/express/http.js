@@ -71,8 +71,12 @@ const dao = require('./backstage/dao')
 app.use('/backstage', dao)
 const handle = require('./backstage/handle')
 app.use('/backstage', handle)
+const query = require('./backstage/queryList')
+app.use('/backstage', query)
 const report = require('./backstage/report')
 app.use('/backstage', report)
+const mock = require('./backstage/mock')
+app.use('/backstage', mock)
 
 
 
@@ -90,7 +94,6 @@ var server = app.listen(80, () => {
 })
 
 
-
 // 注册实时聊天socket
 // var server = app.listen(8810)
 var io = require('socket.io')(server, {
@@ -104,8 +107,6 @@ var io = require('socket.io')(server, {
         allowEIO3: true
     }
 });
-
-
 
 // 监听客户端连接
 io.on('connection', function (socket) {

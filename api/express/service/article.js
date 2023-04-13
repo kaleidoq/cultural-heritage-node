@@ -10,7 +10,11 @@ const db = mysql.createPool(models.mysql)
 db.queryAsync = util.promisify(db.query)
 
 
-// 获得文章的详细内容
+
+/**
+ * // 获得文章的详细内容
+ * @deprecated
+ */
 router.get('/getArticleCover', (req, res) => {
     const body = req.body
     const data = req.query
@@ -61,33 +65,31 @@ router.get('/getArticleCover', (req, res) => {
 
 /**
  * 获得文章列表数据
- * @param{
- * length:当前已经得到的列表长度
- * class_id:获得的分类id
- * state:按什么顺序排序列表（0:最新评论；1:最新发布：2:最多收藏；3:最多喜欢)
+ * @param { length:当前已经得到的列表长度;
+ * class_id:获得的分类id;
+ * state:按什么顺序排序列表（0:最新评论；1:最新发布：2:最多收藏；3:最多喜欢）;
  * }
  * @returns{list}
  */
 router.get('/getArticleList', async (req, res) => {
     const user = req.body.userID
-
     const length = req.query.length
     const state = req.query.state
-    // console.log(req.query, 'query')
-    // switch (req.query.state) {
-    //     case 0:
-    //         state = 'last_comment_time';
-    //         break
-    //     case 1:
-    //         state = 'create_time';
-    //         break
-    //     case 2:
-    //         state = 'collect_count';
-    //         break
-    //     case 3:
-    //         state = 'like_count';
-    //         break
-    // }
+    /*     console.log(req.query, 'query')
+        switch (req.query.state) {
+            case 0:
+                state = 'last_comment_time';
+                break
+            case 1:
+                state = 'create_time';
+                break
+            case 2:
+                state = 'collect_count';
+                break
+            case 3:
+                state = 'like_count';
+                break
+        } */
     var sql = `select * from cover_content order by ${state} desc limit ${length} , 10`
     if (parseInt(req.query.class_id) != 0) {
         let class_id = parseInt(req.query.class_id)
@@ -130,50 +132,6 @@ router.get('/getArticleList', async (req, res) => {
         }) */
     // console.log(list, 'list');
     new Result(list, '首页信息获得成功').success(res)
-
-    // let sql =
-    //     `select * from cover_content where class_id in
-    //  (select class_id from classify where parent_class_id = ?) order by create_time desc limit ? , 10`
-
-    // db.query('select * from cover_content order by create_time desc limit ? ,10', [parseInt(data.length)], async (err, mes) => {
-    //     if (err) return console.log(err.message)
-    //     let promiseList = []
-    //     // 将全部的异步函数循环存入promiseList中
-    //     // let sql = "select * from article_comment_list where parent_comment_id=?"
-    //     // 判断这个文章的作者是否为自己关注的
-    //     // let sql = 'select * from followee_user where user_id =? and followed_user_id =?;'
-    //     mes.forEach(item => {
-    //         let sql = `select * from followee_user where user_id =${body.userID} and followed_user_id =${item.user_id};
-    //     select * from like_list where user_id =${body.userID}  and article_id =${item.article_id};
-    //     select * from collection_article_user where user_id =${body.userID}  and article_id =${item.article_id}; `
-    //         promiseList.push(new Promise((resolve, reject) => {
-    //             db.query(sql, (err, data) => {
-    //                 if (err) return console.log(err.message)
-    //                 let user_rele = {}
-    //                 // console.log(data)
-    //                 if (data[0].length != 0) user_rele.is_follow = true
-    //                 else user_rele.is_follow = false
-    //                 if (data[1].length != 0) user_rele.is_like = true
-    //                 else user_rele.is_like = false
-    //                 if (data[2].length != 0) user_rele.is_collect = true
-    //                 else user_rele.is_collect = false
-    //                 resolve(user_rele)
-    //             })
-    //         }));
-    //     });
-    //     //放到循环外边  因为 rspList是一个数组
-    //     // 再用Promise.all方法按顺序执行最后循环存入mes中
-    //     Promise.all(promiseList).then((chil) => {
-    //         chil.map((item, index) => {
-    //             // console.log(item, "item");
-    //             mes[index].is_follow = item.is_follow
-    //             mes[index].is_like = item.is_like
-    //             mes[index].is_collect = item.is_collect
-    //             // console.log(mes, "mes");
-    //         });
-    //         new Result(mes, '首页容器内数据获取成功').success(res)
-    //     });
-    // })
 })
 
 // 获得文章的详细内容
