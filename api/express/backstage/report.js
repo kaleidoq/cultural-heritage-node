@@ -32,7 +32,7 @@ router.get('/reportOrderPrice', async (req, res) => {
         GROUP BY name
         ORDER BY name;`
     const mes = await db.queryAsync(sql)
-    // console.log(mes)
+    console.log(mes)
     new Result(mes, '价格区间可视化数据获取成功').success(res)
 })
 

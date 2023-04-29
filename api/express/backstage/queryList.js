@@ -106,7 +106,7 @@ router.get('/queryUnauditArticleList', async (req, res) => {
     let result = []
     if (data.type == 'create_time') {
         sql = `select a.*, c.class_name from article a, classify c where a.is_audit=0${query}
-    and a.class_id = c.class_id order by create_time asc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize};`
+    and a.class_id = c.class_id order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize};`
     } else {
         sql = `select  a.* ,ct.total,ct.class_name from article a inner join
             (select c.class_id,c.class_name,ifnull(art,0)+ifnull(good,0) as total
@@ -128,16 +128,20 @@ router.get('/queryUnauditArticleList', async (req, res) => {
 // 获得用户的相关数据
 router.get('/queryUserInfoList', async (req, res) => {
     const data = req.query
+    let str = ''
+    if (data.query != '')
+        str = ` and ${data.column} like '%${data.query}%'`
+
     // const body = req
     // console.log(data, 'data');
     const list = {}
-    let sql = `select count(*) as total from user_info where is_del=0`
+    let sql = `select count(*) as total from user_info where is_del=0${str}`
     const total = await db.queryAsync(sql)
     list.total = total[0].total
     // console.log(list);
-    if (data.query != '')
-        sql = `select * from user_info where is_del=0 and ${data.column} like '%${data.query}%' order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize}`
-    else sql = `select * from user_info where is_del=0 order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize}`
+    // if (data.query != '')
+    sql = `select * from user_info where is_del=0${str} order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize}`
+    // else sql = `select * from user_info where is_del=0 order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize}`
     const mes = await db.queryAsync(sql)
     list.list = mes
     new Result(list, '用户数据获取成功').success(res)
@@ -158,18 +162,29 @@ router.get('/queryUserInfoList', async (req, res) => {
  */
 router.get('/getGoodsList', async (req, res) => {
     const data = req.query
-    const list = {}
-    let sql = ''
+    let list = {}
+    let sql = ``,
+        str = ``,
+        classStr = ``
+    console.log(data)
     if (data.query != '')
-        sql = `select count(*) as total from goods_info where is_del=0 and ${data.column} like '%${data.query}%'`
-    else sql = `select count(*) as total from goods_info where is_del=0 `
+        str = ` and g.${data.column} like '%${data.query}%'`
+    if (data.class_id != 0)
+        classStr = ` and g.class_id=${data.class_id}`
+    // if (data.query != '')
+    sql = `select count(*) as total from goods_info g where g.is_del=0${str}${classStr}`
+    console.log(sql)
+    // else sql = `select count(*) as total from goods_info where is_del=0 `
     const total = await db.queryAsync(sql)
     list.total = total[0].total
-    if (data.query != '')
-        sql = `select g.*,c.class_name from goods_info g,classify c where g.class_id = c.class_id and g.${data.column} like '%${data.query}%'
-    order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize};`
-    else sql = `select g.*,c.class_name from goods_info g,classify c where g.class_id = c.class_id
-    order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize};`
+    // if (data.query != '')
+    sql = `select g.*,c.class_name from goods_info g,classify c where g.class_id = c.class_id${str}${classStr}
+    order by g.create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize};`
+    // else sql = `select g.*,c.class_name from goods_info g,classify c where g.class_id = c.class_id
+    // order by create_time desc limit ${(data.pagenum - 1) * data.pagesize},${data.pagesize};`
+    console.log(sql)
+
+
     const mes = await db.queryAsync(sql)
     list.list = mes
     new Result(list, '商品获取成功').success(res)

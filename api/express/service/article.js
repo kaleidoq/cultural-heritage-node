@@ -192,12 +192,13 @@ router.get('/getArticle', (req, res) => {
     db.query('select * from cover_content where article_id=?', [query.article_id], (err, mes) => {
         if (err) return console.log(err.message)
         const article = mes[0]
-        console.log(article, "article")
-        db.query('select images from article where user_id=?', [article.user_id], (err, data) => {
+        // console.log(article, "article")
+        db.query('select images from article where article_id=?', [article.article_id], (err, data) => {
             if (err) return console.log(err.message)
-            console.log(data)
-            if (article.images != null)
+            if (data[0].images != null) {
                 article.images = data[0].images.split(',')
+            }
+            // console.log(article, 'article');
             let sql = `select * from followee_user where user_id =${user.userID} and followed_user_id =${article.user_id};
         select * from like_list where user_id =${user.userID}  and article_id =${article.article_id};
         select * from collection_article_user where user_id =${user.userID}  and article_id =${article.article_id}; `

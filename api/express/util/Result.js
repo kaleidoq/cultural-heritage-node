@@ -39,6 +39,7 @@ class Result {
     }
 
     json(res) {
+        // console.log(res, 'res');
         res.json(this.createResult())
     }
 
@@ -58,9 +59,10 @@ class Result {
     //     this.json(res)
     // }
 
-    fail(res) {
-        this.code = CODE_ERROR
+    fail(code, res) {
+        this.code = code
         this.data = this.msg
+        res.status(code);
         this.json(res)
     }
 }

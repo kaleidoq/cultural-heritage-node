@@ -138,7 +138,7 @@ router.get('/getOrderDesc', async (req, res) => {
  */
 router.get('/queryOrder', async (req, res) => {
     const user = req.body.userID
-    let sql = `select * from order_desc_list where buyer_user_id = ${user};`
+    let sql = `select * from order_desc_list where buyer_user_id = ${user} order by create_time desc;`
     const mes = await db.queryAsync(sql)
     // console.log(mes)
     new Result(mes, '订单列表查看成功').success(res)

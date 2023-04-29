@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken")
-    //撒盐，加密时候混淆
+//撒盐，加密时候混淆
 const secret = '123bingjspoiuytrewqlkjhgfdsa'
 
 
@@ -12,14 +12,14 @@ const Result = require('./util/Result')
 
 
 // module.exports.createToken = function createToken(info) {
-createToken = function(info) {
-        let token = jwt.sign(info, secret, {
-            //Token有效时间 单位s
-            // expiresIn: 60 * 60 * 10 //十个小时
-        })
-        return token
-    }
-    // exports.createToken = createToken
+createToken = function (info) {
+    let token = jwt.sign(info, secret, {
+        //Token有效时间 单位s
+        // expiresIn: 60 * 60 * 10 //十个小时
+    })
+    return token
+}
+// exports.createToken = createToken
 
 //验证Token
 // module.exports = function verifyToken(token) {
@@ -43,8 +43,8 @@ function verifyToken(token) {
                 // resolve(data)
                 new Result('登录信息失效').fail(401, res)
                 return err
-                reject(err)
-                    // res.status(401)
+                // reject(err)
+                // res.status(401)
             } else {
                 resolve(data)
             }

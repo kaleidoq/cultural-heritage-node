@@ -3,7 +3,8 @@ const mysql = require('mysql')
 const models = require('../module')
 const { createToken } = require('../token.js')
 const Result = require('../util/Result')
-const util = require('util')
+const util = require('util');
+const { log } = require('console');
 
 const db = mysql.createPool(models.mysql)
 
@@ -41,7 +42,7 @@ router.post('/login', (req, res) => {
         console.log(obj)
         if (!obj) {
             console.log('没有账号！！！')
-            new Result('没有该账号').fail(404, res)
+            new Result('没有该账号').fail(401, res)
             // res.status(404).send('没有账号！！！')
             // res.status(404).json('没有任何内容');
         } else if (data.password != obj.password) {
@@ -49,7 +50,7 @@ router.post('/login', (req, res) => {
             // mes.message = "密码错误！！！"
             // res.status(403)
             // res.send({ message: '密码错误！！！' })
-            new Result('密码错误').fail(404, res)
+            new Result('密码错误').fail(401, res)
         } else {
             console.log(obj)
             // tokenjs.createToken(mes.user_id)
@@ -184,6 +185,7 @@ router.get('/getUserIntro', async (req, res) => {
 router.get('/getUserInfo', async (req, res) => {
     const mine = req.body.userID
     const user = req.body.user_id
+    console.log(user, 'user');
     let id = 0
     if (user == null || user == 0) id = mine
     else id = user
